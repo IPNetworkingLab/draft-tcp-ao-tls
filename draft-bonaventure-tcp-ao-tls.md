@@ -1,24 +1,35 @@
 ---
 title: "Opportunistic TCP-AO with TLS"
-abbrev: "Opp-TCP-AO"
+abbrev: Opp-TCP-AO
 docname: draft-bonaventure-tcp-ao-tls-latest
 category: exp
 
-ipr: trust200902
-area: Transport Area
-workgroup: tcpm
-keyword: Internet-Draft
+submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
+number:
+date:
+consensus: true
+v: 3
+area: "Transport"
+workgroup: "TCPM"
+keyword:
+ - tcp
+ - tls
+ - tcp-ao
 
-stand_alone: yes
-smart_quotes: no
-pi: [toc, sortrefs, symrefs]
+venue:
+  group: "TCPM"
+  type: "Working Group"
+  mail: "tcpm@ietf.org"
+  arch: "https://mailarchive.ietf.org/arch/browse/tcpm/"
+  github: "obonaventure/draft-tcp-ao-tls"
+  latest: "https://obonaventure.github.io/draft-tcp-ao-tls/draft-bonaventure-tcp-ao-tls.html"
 
 author:
  -
     name: Olivier Bonaventure 
     organization: UCLouvain 
     email: olivier.bonaventure@uclouvain.be
--
+ -
     name: Maxime Piraux
     organization: UCLouvain
     email: maxime.piraux@uclouvain.be
@@ -31,18 +42,9 @@ author:
 normative:
   RFC5925:
   RFC8446:
+  RFC5926:
 
 informative:
-  RFC4960:
-  RFC6335:
-  RFC7258:
-  RFC8041:
-  RFC8305:
-  RFC8548:
-  RFC8684:
-  RFC9000:
-  RFC7540:
-  RFC3552:
 
 
 --- abstract
@@ -78,7 +80,7 @@ prevents packet injection attacks that could result in the failure of TLS
 connections.
 
 This document is organised as follows. We provide a brief overview of
-Opportunistic TCP-AO in section {{section}}. Then section {{tls}} discusses the
+Opportunistic TCP-AO in section {{overview}}. Then section {{format}} discusses the
 required changes to TCP-AO and TLS. 
 
 
@@ -87,9 +89,6 @@ required changes to TCP-AO and TLS.
 {::boilerplate bcp14-tagged}
 
 ## Notational conventions
-
-This document uses the same conventions as defined in Section 1.3 of
-{{RFC9000}}.
 
 This document uses network byte order (that is, big endian) values.
 Fields are placed starting from the high-order bits of each byte.
@@ -134,7 +133,7 @@ Client                                   Server
  |       ACK, TLS ClientHello + ao           |
  |------------------------------------------>|
  |  TLS ServerHello, TLS EncryptedExtensions |
- |				 , ...       |
+ |                               , ...       |
  |<------------------------------------------|
  |              [TLS Finished]               |
  |------------------------------------------>|
@@ -164,19 +163,19 @@ The format for the AO Extension is defined by:
 ~~~
    enum {
       tcp_option_protection_enabled(1),
-      tcp_option_protection_disabled(2),	
+      tcp_option_protection_disabled(2),
       (255)
    } TCPAOOptionProt;
 
    enum {
       HMAC-SHA-1-96(1),
-      AES-128-CMAC-96(2),	
+      AES-128-CMAC-96(2),
       (255)
    } TCPAOAuth;
 
    enum {
       KDF_HMAC_SHA1(1),
-      KDF_AES_128_CMAC(2),	
+      KDF_AES_128_CMAC(2),
       (255)
    } TCPAOKDF;
 
@@ -252,7 +251,7 @@ Client                                   Server
  |           (KeyID=x, RNextID=y)            |
  |------------------------------------------>|
  |              [TLS records]                |
- |           (KeyID=y, RNextID=x)            |	
+ |           (KeyID=y, RNextID=x)            |
  |<----------------------------------------->|
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {: #fig-handshake2 title="Usage of the KeyID and RNextID in TCP AO options during the establishment of an Opportunistic TCP-AO connection"}
@@ -262,6 +261,15 @@ Client                                   Server
 ## Key updates
 
 What happens when TLS keys are updated ? Probably not needed to change the TCP-AO keys, they should be changed independently. Use key identifier as sequence number for the HKDF ?
+
+## Session resumption and other TLS features
+
+## 0-RTT
+
+## Error messages
+
+## Fastopen support ?
+
 
 # Security Considerations
 
