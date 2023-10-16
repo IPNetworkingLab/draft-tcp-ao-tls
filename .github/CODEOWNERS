@@ -1,0 +1,3 @@
+# Automatically generated CODEOWNERS
+# Regenerate with `make update-codeowners`
+draft-bonaventure-tcp-ao-tls.md olivier.bonaventure@uclouvain.be maxime.piraux@uclouvain.be thomas.wirtgen@uclouvain.be
