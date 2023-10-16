@@ -26,8 +26,8 @@ venue:
 
 author:
  -
-    name: Olivier Bonaventure 
-    organization: UCLouvain 
+    name: Olivier Bonaventure
+    organization: UCLouvain
     email: olivier.bonaventure@uclouvain.be
  -
     name: Maxime Piraux
@@ -51,7 +51,7 @@ informative:
 
 This document specifies an opportunistic mode for TCP-AO. The TCP
 connection starts with a well-known authentication key which is later
-replaced by a key derived from a TLS handshake. 
+replaced by a key derived from a TLS handshake.
 
 --- middle
 
@@ -81,7 +81,7 @@ connections.
 
 This document is organised as follows. We provide a brief overview of
 Opportunistic TCP-AO in section {{overview}}. Then section {{format}} discusses the
-required changes to TCP-AO and TLS. 
+required changes to TCP-AO and TLS.
 
 
 # Conventions and Definitions
@@ -115,7 +115,7 @@ of the TCP-AO connection with an ACK and sends a TLS ClientHello. This
 ClientHello contains the AO Extension defined in this document. This
 extension specifies the authentication algorithms that the client wishes
 to use for the connection and whether TCP options should be protected or
-not. At this point the server can derive the TLS keys and the TCP-AO keys. 
+not. At this point the server can derive the TLS keys and the TCP-AO keys.
 The server replies with TLS ServerHello and TLS EncryptedExtensions
 messages that are sent in packets using the default TCP-AO MKT. It installs
 the new key in its TCP-AO MKT.
@@ -219,13 +219,13 @@ of the Finished messages shall be derived from TLS Master secret using:
 
   Derive-Secret(Master Secret, "tcpao", ClientHello...server Finished)
      = tcp_ao_secret
-     
+
 ~~~
 
 
 The traffic keys used by the client and the server can then be derived
 from this Master key using the procedures defined in {{RFC5925}} and
-{{RFC5926}}. 
+{{RFC5926}}.
 
 The client and the server also need to decide on the key identifier
 to use after having sent (for the server) or received (for the client) the
@@ -284,7 +284,7 @@ To be provided.
 {:numbered="false"}
 
 The authors thank xx for their comments on the first version of this draft and
-Dimitri Safonov for the TCP-AO implementation in Linux. 
+Dimitri Safonov for the TCP-AO implementation in Linux.
 
 # Change log
 {:numbered="false"}
