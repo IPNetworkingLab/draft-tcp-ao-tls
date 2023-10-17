@@ -153,17 +153,17 @@ Client                                   Server
 
 This document specifies one TLS extension to support the opportunistic
 utilization of TCP-AO with keys derived from the TLS secure handshake.
-The AO Extension can only be placed in the ClientHello message.
+The "tcp_ao" extension can only be placed in the ClientHello message.
 
 
 ~~~
 enum {
-    AO(TBD),
+    tcp_ao(TBD),
     (65535)
 } ExtensionType;
 ~~~
 
-The format for the AO Extension is defined by:
+The format for the "tcp_ao" is defined by:
 
 ~~~
    enum {
@@ -188,7 +188,7 @@ The format for the AO Extension is defined by:
       TCPAOOptionProt prot;
       TCPAOAuth auth;
       TCPAOKDF kdf;
-   } AOExtension;
+   } TCPAO;
 ~~~
 
 
