@@ -49,9 +49,9 @@ informative:
 
 --- abstract
 
-This document specifies an opportunistic mode for TCP-AO. The TCP
-connection starts with a well-known authentication key which is later
-replaced by a key derived from a TLS handshake.
+This document specifies an opportunistic mode for TCP-AO. In this mode, the TCP
+connection starts with a well-known authentication key which is later replaced
+by a key derived from a TLS handshake.
 
 --- middle
 
@@ -72,10 +72,11 @@ applications that use long-lived TCP connections, having an existing MKT on
 the client and the server before establishing a connection is a severe
 limitation from a deployment viewpoint.
 
-This document proposes a less secure version of TCP-AO where the packets
-exchanged at the beginning of a connection are protected by default keys.
-These default keys are replaced by secure keys derived from the TLS {{RFC8446}}
-secure handshake to protect the integrity of all the other packets. This
+This document proposes a way to derive a MKT from the TLS secure handshake {{RFC8446}}.
+Before the TLS handshake completes, this document defines default keys which
+offer a limited protection to the first TCP packets of the connection.
+These default keys are then replaced by secure keys to protect the integrity of
+subsequent packets past the TLS handshake. This
 prevents packet injection attacks that could result in the failure of TLS
 connections.
 
@@ -93,11 +94,11 @@ required changes to TCP-AO and TLS.
 This document uses network byte order (that is, big endian) values.
 Fields are placed starting from the high-order bits of each byte.
 
-# An overview of Oppotunistic TCP-AO {#overview}
+# An overview of Opportunistic TCP-AO {#overview}
 
 In a nutshell, an opportunistic TCP-AO connection starts like a TCP-AO
 connection, i.e. the SYNs and all subsequent packets are authenticated,
-but using a MKT with a default key. During the TLS secure handshake, the
+but using a MKT with a default key. After the TLS secure handshake, the
 communicating hosts derive secure keys and update their MKT with these
 secure keys. Thus, the beginning of the connection is not protected against
 packet modifications of packet injection attacks. The real protection only
@@ -162,20 +163,20 @@ The format for the AO Extension is defined by:
 
 ~~~
    enum {
+      tcp_option_protection_disabled(0),
       tcp_option_protection_enabled(1),
-      tcp_option_protection_disabled(2),
       (255)
    } TCPAOOptionProt;
 
    enum {
-      HMAC-SHA-1-96(1),
-      AES-128-CMAC-96(2),
+      HMAC-SHA-1-96(0),
+      AES-128-CMAC-96(1),
       (255)
    } TCPAOAuth;
 
    enum {
-      KDF_HMAC_SHA1(1),
-      KDF_AES_128_CMAC(2),
+      KDF_HMAC_SHA1(0),
+      KDF_AES_128_CMAC(1),
       (255)
    } TCPAOKDF;
 
@@ -202,13 +203,13 @@ client and the server must be configured with a default MKT. This default
 MKT is used to authenticate the packets until the derivation of the secure
 MKT from the TLS Master Key. This document defines the following default MKT:
 
- - TCP connection identifier: selected by the TCP stack
+ - TCP connection identifier: selected by the TCP stack.
  - TCP option flag. The default MKT assumes that TCP options are not included
    in the MAC calculation.
- - The current values for the SendID and RecvID are set to 0
- - The Master key is set to 0x1cebb1ff
- - The default key derivation function is  KDF_HMAC_SHA1
- - The default message authentication code is HMAC-SHA-1-96
+ - The current values for the SendID and RecvID are set to 0.
+ - The Master key is set to 0x1cebb1ff.
+ - The default key derivation function is KDF_HMAC_SHA1.
+ - The default message authentication code is HMAC-SHA-1-96.
 
 ## Derivation of the TCP AO MKT after the secure handshake
 
