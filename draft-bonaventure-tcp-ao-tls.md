@@ -27,15 +27,15 @@ venue:
 author:
  -
     name: Olivier Bonaventure
-    organization: UCLouvain
+    organization: UCLouvain, WEL RI
     email: olivier.bonaventure@uclouvain.be
  -
     name: Maxime Piraux
-    organization: UCLouvain
+    organization: UCLouvain, WEL RI
     email: maxime.piraux@uclouvain.be
  -
     name: Thomas Wirtgen
-    organization: UCLouvain
+    organization: UCLouvain, WEL RI
     email: thomas.wirtgen@uclouvain.be
 
 
@@ -51,7 +51,7 @@ informative:
 
 This document specifies an opportunistic mode for TCP-AO. In this mode, the TCP
 connection starts with a well-known authentication key which is later replaced
-by a key derived from a TLS handshake.
+by a secure key derived from a TLS handshake.
 
 --- middle
 
@@ -60,25 +60,25 @@ by a key derived from a TLS handshake.
 
 The TCP Authentication Option (TCP-AO) {{RFC5925}} provides integrity
 protection for long-lived TCP connections. It assumes that the communicating
-hosts share a Master Key Tuple (MKT). This MKT is used to derived traffic
-keys that allow to authenticate the packets exchanged by the two hosts.
+hosts share a Master Key Tuple (MKT). This MKT is used to derive traffic
+keys to authenticate the TCP packets exchanged by the two hosts.
 TCP-AO supports different authentication algorithms {{RFC5926}}.
 
 TCP-AO protects the integrity of all the packets exchanged during a TCP
-connection, including the SYNs. Such a protection is important for some
+connection, including the SYNs. Such a protection is important for some specific
 services, but many applications would benefit from the integrity protection
-offered by TCP-AO, notably against RST attacks. Unfortunately, for many
-applications that use long-lived TCP connections, having an existing MKT on
-the client and the server before establishing a connection is a severe
-limitation from a deployment viewpoint.
+offered by TCP-AO, notably against RST attacks. Unfortunately, from a deployment
+viewpoint, for many applications that use long-lived TCP connections
+having an existing MKT on the client and the server before establishing a
+connection is a severe limitation.
 
 This document proposes a way to derive a MKT from the TLS secure handshake {{RFC8446}}.
 Before the TLS handshake completes, this document defines default keys which
 offer a limited protection to the first TCP packets of the connection.
 These default keys are then replaced by secure keys to protect the integrity of
 subsequent packets past the TLS handshake. This
-prevents packet injection attacks that could result in the failure of TLS
-connections.
+prevents packet injection attacks that could result in the failure of the TLS
+connection.
 
 This document is organised as follows. We provide a brief overview of
 Opportunistic TCP-AO in section {{overview}}. Then section {{format}} discusses the
@@ -98,18 +98,19 @@ Fields are placed starting from the high-order bits of each byte.
 
 In a nutshell, an opportunistic TCP-AO connection starts like a TCP-AO
 connection, i.e. the SYNs and all subsequent packets are authenticated,
-but using a MKT with a default key. After the TLS secure handshake, the
+but using a MKT with a default key specified in this document.
+After the TLS secure handshake, the
 communicating hosts derive secure keys and update their MKT with these
 secure keys. Thus, the beginning of the connection is not protected against
 packet modifications of packet injection attacks. The real protection only
-starts once the TLS handshake finishes. The TLS Finished message, and
-all subsequent TLS records, are protected with the secure traffic keys derived
-from the TLS handshake.
+starts once the TLS handshake finishes. The TCP packets carrying the TLS
+Finished message, and all subsequent TLS records, are protected with the
+secure traffic keys derived from the TLS handshake.
 
 Figure {{fig-overview-handshake}} illustrates the establishment of an
 opportunistic TCP-AO connection. The client sends a SYN packet using
 the default MKT defined in this document. The TCP-AO option in the SYN
-packet uses a KeyID of 0. The server validates the TCP-AO
+packet indicates the use of this default MKT. The server validates the TCP-AO
 option and replies with an integrity protected SYN+ACK.
 The client confirms the establishment
 of the TCP-AO connection with an ACK and sends a TLS ClientHello. This
@@ -127,18 +128,21 @@ Finished are protected using the MKT derived from the secure TLS handshake.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Client                                   Server
- |                    SYN                    |
+ |            SYN (KeyID=0, RNextID=0)       |
  |------------------------------------------>|
- |                  SYN+ACK                  |
+ |          SYN+ACK (KeyID=0, RNextID=0)     |
  |<------------------------------------------|
- |       ACK, TLS ClientHello + ao           |
+ |       ACK, TLS ClientHello + AO           |
+ |          (KeyID=0, RNextID=0)             |
  |------------------------------------------>|
  |  TLS ServerHello, TLS EncryptedExtensions |
- |                               , ...       |
+ |          (KeyID=0, RNextID=x)             |
  |<------------------------------------------|
  |              [TLS Finished]               |
+ |           (KeyID=x, RNextID=y)            |
  |------------------------------------------>|
  |              [TLS records]                |
+ |           (KeyID=y, RNextID=x)            |
  |<----------------------------------------->|
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {: #fig-overview-handshake title="Starting an opportunistic TCP-AO connection with TLS"}
@@ -211,7 +215,7 @@ MKT from the TLS Master Key. This document defines the following default MKT:
  - The default key derivation function is KDF_HMAC_SHA1.
  - The default message authentication code is HMAC-SHA-1-96.
 
-## Derivation of the TCP AO MKT after the secure handshake
+## Derivation of the secure TCP AO MKT
 
 The Master key for the MKT to protect the TCP packets after the transmission
 of the Finished messages shall be derived from TLS Master secret using:
@@ -223,7 +227,6 @@ of the Finished messages shall be derived from TLS Master secret using:
 
 ~~~
 
-
 The traffic keys used by the client and the server can then be derived
 from this Master key using the procedures defined in {{RFC5925}} and
 {{RFC5926}}.
@@ -231,45 +234,21 @@ from this Master key using the procedures defined in {{RFC5925}} and
 The client and the server also need to decide on the key identifier
 to use after having sent (for the server) or received (for the client) the
 Finished message. This is a local decision of each host provided that they
-select a different key identifier than 0. In the example below, the server
-selects x as its key identifier while the client selects y.
+select a different key identifier than 0.
 
-TODO: on pourrait aussi utiliser le key identifier comme etant le nombre d'iterations du KDF
+## Current limitations
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Client                                   Server
- |            SYN (KeyID=0, RNextID=0)       |
- |------------------------------------------>|
- |          SYN+ACK (KeyID=0, RNextID=0)     |
- |<------------------------------------------|
- |       ACK, TLS ClientHello + AO           |
- |          (KeyID=0, RNextID=0)             |
- |------------------------------------------>|
- |  TLS ServerHello, TLS EncryptedExtensions |
- |          (KeyID=0, RNextID=x)             |
- |<------------------------------------------|
- |              [TLS Finished]               |
- |           (KeyID=x, RNextID=y)            |
- |------------------------------------------>|
- |              [TLS records]                |
- |           (KeyID=y, RNextID=x)            |
- |<----------------------------------------->|
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-{: #fig-handshake2 title="Usage of the KeyID and RNextID in TCP AO options during the establishment of an Opportunistic TCP-AO connection"}
+This version of the document does not specifiy how to rekey the MKT after a TLS
+key update. It is left for later versions of this document to fill this gap.
+One way would be to derive a new tcp_ao_secret from the new TLS
+Master Secret and use a new KeyID. However, this could expose the key update
+event to on-path attackers. Further guidance is required on the severity of
+this issue and how it could be mitigated. It is also expected that the bounds
+for renewing the TCP-AO keys are different from the ones of TLS keys.
 
-
-
-## Key updates
-
-What happens when TLS keys are updated ? Probably not needed to change the TCP-AO keys, they should be changed independently. Use key identifier as sequence number for the HKDF ?
-
-## Session resumption and other TLS features
-
-## 0-RTT
-
-## Error messages
-
-## Fastopen support ?
+Later versions of this document will also specify the interactions between this
+mode of enabling TCP-AO and other TLS mechanisms, such as using pre-shared keys
+and 0-RTT data, as well as other TCP extensions, such as TCP Fast Open.
 
 
 # Security Considerations
