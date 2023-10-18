@@ -216,6 +216,16 @@ MKT from the TLS Master Key. This document defines the following default MKT:
  - The default key derivation function is KDF_HMAC_SHA1.
  - The default message authentication code is HMAC-SHA-1-96.
 
+Given that the TCP-AO KeyID is a local field and has no global meaning,
+hosts have no guarantee that a KeyID of 0 will be unequivocally recognised as
+designating the default MKT specified in this document.
+{{Section 7.5.1 of RFC5925}} indicates that hosts receiving SYN segments with
+TCP-AO enabled and no matching MKT should remove the option and accept them.
+A client initiating a TCP connection in the opportunistic mode of TCP-AO
+MUST check that the server accepted the use of TCP-AO in this mode by replying
+using the default MKT before deriving a secure MKT as described in this
+document.
+
 ## Derivation of the secure TCP AO MKT
 
 The Master key for the MKT to protect the TCP packets after the transmission
@@ -253,8 +263,16 @@ and 0-RTT data, as well as other TCP extensions, such as TCP Fast Open.
 
 # Security Considerations
 
+TCP-AO provides a protection against the injection of TCP RST. This can impact
+legitimate connectionless resets, e.g. when an endpoint loses the required state
+to send TCP-AO segments. {{Section 7.7 of RFC5925}} provides recommendations to
+mitigate this effect.
 
-To be provided
+Using TCP-AO with TLS can also inhibits the triggering of the "bad_record_mac"
+alert that abruptly closes the TLS session when a decryption error occurs. For
+instance, injected packets will fail the TCP-AO authentication and be ignored
+by the receiver instead. This also prevents sessionless resets at the TLS level,
+and similar recommendations as in {{Section 7.7 of RFC5925}} can apply.
 
 # IANA Considerations
 
