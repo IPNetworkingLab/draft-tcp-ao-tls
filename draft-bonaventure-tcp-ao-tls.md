@@ -67,8 +67,9 @@ TCP-AO supports different authentication algorithms {{RFC5926}}.
 TCP-AO protects the integrity of all the packets exchanged during a TCP
 connection, including the SYNs. Such a protection is important for some specific
 services, but many applications would benefit from the integrity protection
-offered by TCP-AO, notably against RST attacks. Unfortunately, from a deployment
-viewpoint, for many applications that use long-lived TCP connections
+offered by TCP-AO, notably against RST attacks that can happen later in the
+connection. Unfortunately, from a deployment
+viewpoint, for many applications that use long-lived TCP connections,
 having an existing MKT on the client and the server before establishing a
 connection is a severe limitation.
 
@@ -102,7 +103,7 @@ but using a MKT with a default key specified in this document.
 After the TLS secure handshake, the
 communicating hosts derive secure keys and update their MKT with these
 secure keys. Thus, the beginning of the connection is not protected against
-packet modifications of packet injection attacks. The real protection only
+packet modifications and packet injection attacks. The real protection only
 starts once the TLS handshake finishes. The TCP packets carrying the TLS
 Finished message, and all subsequent TLS records, are protected with the
 secure traffic keys derived from the TLS handshake.
@@ -163,7 +164,7 @@ enum {
 } ExtensionType;
 ~~~
 
-The format for the "tcp_ao" is defined by:
+The format for the "tcp_ao" extension is defined by:
 
 ~~~
    enum {
@@ -244,7 +245,8 @@ One way would be to derive a new tcp_ao_secret from the new TLS
 Master Secret and use a new KeyID. However, this could expose the key update
 event to on-path attackers. Further guidance is required on the severity of
 this issue and how it could be mitigated. It is also expected that the bounds
-for renewing the TCP-AO keys are different from the ones of TLS keys.
+for renewing the TCP-AO keys are different from the ones of TLS keys used for
+record protection.
 
 Later versions of this document will also specify the interactions between this
 mode of enabling TCP-AO and other TLS mechanisms, such as using pre-shared keys
