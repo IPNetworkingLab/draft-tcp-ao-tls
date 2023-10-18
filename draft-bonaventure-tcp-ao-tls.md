@@ -235,18 +235,16 @@ from this Master key using the procedures defined in {{RFC5925}} and
 The client and the server also need to decide on the key identifier
 to use after having sent (for the server) or received (for the client) the
 Finished message. This is a local decision of each host provided that they
-select a different key identifier than 0.
+select a different key identifier than the default KeyID of 0.
 
 ## Current limitations
 
-This version of the document does not specifiy how to rekey the MKT after a TLS
-key update. It is left for later versions of this document to fill this gap.
-One way would be to derive a new tcp_ao_secret from the new TLS
-Master Secret and use a new KeyID. However, this could expose the key update
+This version of the document does not specifiy how to do key updates for the
+MKT. It is left for later versions of this document to fill this gap.
+One way would be to derive a new tcp_ao_secret from the previous tcp_ao_secret
+and use a new KeyID. However, this could expose the key update
 event to on-path attackers. Further guidance is required on the severity of
-this issue and how it could be mitigated. It is also expected that the bounds
-for renewing the TCP-AO keys are different from the ones of TLS keys used for
-record protection.
+this issue and how it could be mitigated.
 
 Later versions of this document will also specify the interactions between this
 mode of enabling TCP-AO and other TLS mechanisms, such as using pre-shared keys
