@@ -43,6 +43,7 @@ normative:
   RFC5925:
   RFC8446:
   RFC5926:
+  RFC8126:
 
 informative:
 
@@ -150,7 +151,7 @@ Client                                   Server
 
 # Opportunistic TCP-AO {#format}
 
-## The AO TLS Extension
+## The TCPAO TLS Extension
 
 This document specifies one TLS extension to support the opportunistic
 utilization of TCP-AO with keys derived from the TLS secure handshake.
@@ -276,7 +277,37 @@ and similar recommendations as in {{Section 7.7 of RFC5925}} can apply.
 
 # IANA Considerations
 
-To be provided.
+IANA is requested to create a new "Opportunistic TCP-AO with TLS" heading for
+the new registries defined in this section. New registrations under this heading
+follow the "Specification Required" policy of {{RFC8126}}.
+
+IANA is requested to add the following entries to the existing "TLS
+ExtensionType Values" registry.
+
+| Value | Extension Name | TLS 1.3 | Recommended | Reference     |
+|:------|:---------------|:--------|:------------|:--------------|
+| TBD   | tcp_ao         | CH      | N           | This document |
+
+Note that "Recommended" is set to N as this extension is intended for
+uses as described in this document.
+
+IANA is requested to create a new registry "Authentication Algorithms" under
+the "Opportunistic TCP-AO with TLS" heading.
+
+The registry governs an 8-bit space. Entries in this registry must include a
+"Algorithm name" field containing a short mnemonic for the algorithm. Its
+initial content is presented in {{the-tcpao-tls-extension}} in
+the TCPAOAuth enum. The registry has a "Reference" column. It is set to
+{{RFC5926}} for the two initial algorithms.
+
+IANA is requested to create a new registry "Key Derivation Functions" under
+the "Opportunistic TCP-AO with TLS" heading.
+
+The registry governs an 8-bit space. Entries in this registry must include a
+"Key Derivation Function name" field containing a short mnemonic for the function. Its
+initial content is presented in {{the-tcpao-tls-extension}} in
+the TCPAOKDF enum. The registry has a "Reference" column. It is set to
+{{RFC5926}} for the two initial functions.
 
 # Acknowledgments
 {:numbered="false"}
