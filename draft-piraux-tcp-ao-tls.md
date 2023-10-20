@@ -1,7 +1,7 @@
 ---
 title: "Opportunistic TCP-AO with TLS"
 abbrev: Opp-TCP-AO
-docname: draft-bonaventure-tcp-ao-tls-latest
+docname: draft-piraux-tcp-ao-tls-latest
 category: exp
 
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
@@ -22,20 +22,20 @@ venue:
   mail: "tcpm@ietf.org"
   arch: "https://mailarchive.ietf.org/arch/browse/tcpm/"
   github: "obonaventure/draft-tcp-ao-tls"
-  latest: "https://obonaventure.github.io/draft-tcp-ao-tls/draft-bonaventure-tcp-ao-tls.html"
+  latest: "https://obonaventure.github.io/draft-tcp-ao-tls/draft-piraux-tcp-ao-tls.html"
 
 author:
  -
-    name: Olivier Bonaventure 
-    organization: UCLouvain 
-    email: olivier.bonaventure@uclouvain.be
- -
     name: Maxime Piraux
-    organization: UCLouvain
+    organization: UCLouvain & WELRI
     email: maxime.piraux@uclouvain.be
  -
+    name: Olivier Bonaventure 
+    organization: UCLouvain & WELRI
+    email: olivier.bonaventure@uclouvain.be
+ -
     name: Thomas Wirtgen
-    organization: UCLouvain
+    organization: UCLouvain & WELRI
     email: thomas.wirtgen@uclouvain.be
 
 
@@ -51,7 +51,7 @@ informative:
 
 This document specifies an opportunistic mode for TCP-AO. The TCP
 connection starts with a well-known authentication key which is later
-replaced by a key derived from a TLS handshake. 
+replaced by a key derived from the TLS handshake. 
 
 --- middle
 
@@ -75,7 +75,7 @@ limitation from a deployment viewpoint.
 This document proposes a less secure version of TCP-AO where the packets
 exchanged at the beginning of a connection are protected by default keys.
 These default keys are replaced by secure keys derived from the TLS {{RFC8446}}
-secure handshake to protect the integrity of all the other packets. This
+secure handshake to protect the integrity of all the subsequent packets. This
 prevents packet injection attacks that could result in the failure of TLS
 connections.
 
@@ -100,7 +100,7 @@ connection, i.e. the SYNs and all subsequent packets are authenticated,
 but using a MKT with a default key. During the TLS secure handshake, the
 communicating hosts derive secure keys and update their MKT with these
 secure keys. Thus, the beginning of the connection is not protected against
-packet modifications of packet injection attacks. The real protection only
+packet modifications or packet injection attacks. The real protection only
 starts once the TLS handshake finishes. The TLS Finished message, and
 all subsequent TLS records, are protected with the secure traffic keys derived
 from the TLS handshake.
@@ -140,7 +140,9 @@ Client                                   Server
  |              [TLS records]                |
  |<----------------------------------------->|
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-{: #fig-overview-handshake title="Starting an opportunistic TCP-AO connection with TLS"}
+{: #fig-overview-handshake title="Starting an opportunistic TCP-AO connection 
+with TLS. The messages between brackets are authenticated using the TCP-AO MKT
+derived from the TLS handshake."}
 
 # Opportunistic TCP-AO {#format}
 
@@ -149,7 +151,6 @@ Client                                   Server
 This document specifies one TLS extension to support the opportunistic
 utilization of TCP-AO with keys derived from the TLS secure handshake.
 The AO Extension can only be placed in the ClientHello message.
-
 
 ~~~
 enum {
@@ -190,7 +191,7 @@ The format for the AO Extension is defined by:
 The TCPAOOptionProt indicates whether the client requests integrity
 protection for the TCP options or not. The TCPAOAuth specifies
 the authentication algorithm defined in {{RFC5926}} that will be
-used to protect the packets starting from the transmission of the transmission
+used to protect the packets starting from the transmission 
 of the Finished message. The TCPAOKDF specifies the key derivation
 function defined in {{RFC5926}} and requested by the client to derive the
 keys from the TLS Master Key.
@@ -207,13 +208,13 @@ MKT from the TLS Master Key. This document defines the following default MKT:
    in the MAC calculation.
  - The current values for the SendID and RecvID are set to 0
  - The Master key is set to 0x1cebb1ff
- - The default key derivation function is  KDF_HMAC_SHA1
+ - The default key derivation function is KDF_HMAC_SHA1
  - The default message authentication code is HMAC-SHA-1-96
 
 ## Derivation of the TCP AO MKT after the secure handshake
 
 The Master key for the MKT to protect the TCP packets after the transmission
-of the Finished messages shall be derived from TLS Master secret using:
+of the Finished messages shall be derived from the TLS Master secret using:
 
 ~~~
 
@@ -233,7 +234,6 @@ Finished message. This is a local decision of each host provided that they
 select a different key identifier than 0. In the example below, the server
 selects x as its key identifier while the client selects y.
 
-TODO: on pourrait aussi utiliser le key identifier comme etant le nombre d'iterations du KDF
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Client                                   Server
@@ -257,10 +257,14 @@ Client                                   Server
 {: #fig-handshake2 title="Usage of the KeyID and RNextID in TCP AO options during the establishment of an Opportunistic TCP-AO connection"}
 
 
+{::comment}
+
 
 ## Key updates
 
 What happens when TLS keys are updated ? Probably not needed to change the TCP-AO keys, they should be changed independently. Use key identifier as sequence number for the HKDF ?
+
+
 
 ## Session resumption and other TLS features
 
@@ -270,20 +274,21 @@ What happens when TLS keys are updated ? Probably not needed to change the TCP-A
 
 ## Fastopen support ?
 
+{:/comment}
 
 # Security Considerations
 
 
-To be provided
+To be provided in the next version of this document.
 
 # IANA Considerations
 
-To be provided.
+To be provided in the next version of this document.
 
 # Acknowledgments
 {:numbered="false"}
 
-The authors thank xx for their comments on the first version of this draft and
+The authors thank 
 Dimitri Safonov for the TCP-AO implementation in Linux. 
 
 # Change log
