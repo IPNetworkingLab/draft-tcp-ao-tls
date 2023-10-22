@@ -53,7 +53,7 @@ informative:
 
 This document specifies an opportunistic mode for TCP-AO. In this mode, the TCP
 connection starts with a well-known authentication key which is later replaced
-by a secure key derived from a TLS handshake.
+by a secure key derived from the TLS handshake.
 
 --- middle
 
@@ -264,8 +264,6 @@ this issue and how it could be mitigated.
 Later versions of this document will also specify the interactions between this
 mode of enabling TCP-AO and other TLS mechanisms, such as using pre-shared keys
 and 0-RTT data, as well as other TCP extensions, such as TCP Fast Open.
-
-{::comment}
 
 
 # Security Considerations
