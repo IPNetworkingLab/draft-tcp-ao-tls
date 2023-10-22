@@ -28,9 +28,9 @@ author:
  -
     name: Maxime Piraux
     organization: UCLouvain & WELRI
-    email: maxime.piraux@uclouvain.be	
+    email: maxime.piraux@uclouvain.be
  -
-    name: Olivier Bonaventure 
+    name: Olivier Bonaventure
     organization: UCLouvain & WELRI
     email: olivier.bonaventure@uclouvain.be
  -
@@ -149,7 +149,7 @@ Client                                   Server
  |           (KeyID=y, RNextID=x)            |
  |<----------------------------------------->|
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-{: #fig-overview-handshake title="Starting an opportunistic TCP-AO connection 
+{: #fig-overview-handshake title="Starting an opportunistic TCP-AO connection
 with TLS. The messages between brackets are authenticated using the TCP-AO MKT
 derived from the TLS handshake."}
 
@@ -200,7 +200,7 @@ The format for the "tcp_ao" extension is defined by:
 The TCPAOOptionProt indicates whether the client requests integrity
 protection for the TCP options or not. The TCPAOAuth specifies
 the authentication algorithm defined in {{RFC5926}} that will be
-used to protect the packets starting from the transmission 
+used to protect the packets starting from the transmission
 of the Finished message. The TCPAOKDF specifies the key derivation
 function defined in {{RFC5926}} and requested by the client to derive the
 keys from the TLS Master Key.
@@ -319,8 +319,8 @@ the TCPAOKDF enum. The registry has a "Reference" column. It is set to
 # Acknowledgments
 {:numbered="false"}
 
-The authors thank 
-Dimitri Safonov for the TCP-AO implementation in Linux. 
+The authors thank
+Dimitri Safonov for the TCP-AO implementation in Linux.
 
 
 # Change log
