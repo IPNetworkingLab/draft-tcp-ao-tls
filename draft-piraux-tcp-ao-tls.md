@@ -242,22 +242,27 @@ of the Finished messages are derived from the Exporter Master Secret using
 Keying Material Exporters {{RFC5705}}:
 
 ~~~
-TLS-Exporter("tcp-ao", "", 32)
+struct {
+   TCPAO ao;
+   uint8 key_id;
+} TCPAOKeyExporterContext;
+~~~
+
+~~~
+TLS-Exporter("tcp-ao", TCPAOKeyExporterContext, 32)
    = tcp_ao_secret
 ~~~
 
-The TLS-Exporter function receives the label "tcp-ao" and no context. It
-generates a 32-bytes secret.
+The TLS-Exporter function receives the label "tcp-ao", with the parameters of
+the MKT and the KeyID as context. It generates a 32-bytes secret.
+
+The client and server can decide the value of the KeyID independently and
+announce it in the AO TCP Option as defined in {{RFC5925}}.
+The KeyID MUST be different than the default KeyID of 0.
 
 The traffic keys used by the client and the server can then be derived
 from this secret using the procedures defined in {{RFC5925}} and
 {{RFC5926}}.
-
-The client and the server also need to decide on the key identifier
-to use after having sent (for the server) or received (for the client) the
-Finished message. This is a local decision of each host provided that they
-select a different key identifier than the default KeyID of 0.
-
 
 ## Current limitations
 
