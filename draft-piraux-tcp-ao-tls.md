@@ -254,7 +254,8 @@ TLS-Exporter("tcp-ao", TCPAOKeyExporterContext, 32)
 ~~~
 
 The TLS-Exporter function receives the label "tcp-ao", with the parameters of
-the MKT and the KeyID as context. It generates a 32-bytes secret.
+the MKT and the KeyID as context as defined in the TCPAO structure within
+{{the-tcpao-tls-extension}}. It generates a 32-byte secret.
 
 The client and server can decide the value of the KeyID independently and
 announce it in the AO TCP Option as defined in {{RFC5925}}.
@@ -263,6 +264,9 @@ The KeyID MUST be different than the default KeyID of 0.
 The traffic keys used by the client and the server can then be derived
 from this secret using the procedures defined in {{RFC5925}} and
 {{RFC5926}}.
+
+After the traffic keys are installed, the client and server stop using the
+initial MKT defined in {{the-initial-mkt}}.
 
 ## Current limitations
 
