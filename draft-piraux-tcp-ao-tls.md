@@ -47,7 +47,15 @@ normative:
   RFC8126:
 
 informative:
-
+   CONEXT24:
+    author:
+     - ins: T. Wirtgen
+     - ins: N. Rybowski
+     - ins: C. Pelsser
+     - ins: O. Bonaventure
+    title: The Multiple Benefits of a Secure Transport for BGP
+    seriesinfo: Proceedings of the 20th International Conference on emerging Networking EXperiments and Technologies (CoNEXT'24)
+    date: December 2024
 
 --- abstract
 
@@ -84,6 +92,8 @@ subsequent packets past the TLS handshake. This
 prevents packet injection attacks that could result in the failure of the TLS
 connection.
 
+This mechanism can be used to authenticate the TCP transport of BGP sessions when TLS
+is used to secure their BGP messages as discussed in {{CONEXT24}}.
 
 This document is organised as follows. We provide a brief overview of
 Opportunistic TCP-AO in section {{overview}}. Then section {{format}} discusses the
