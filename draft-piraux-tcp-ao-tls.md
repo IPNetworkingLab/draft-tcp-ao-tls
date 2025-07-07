@@ -21,13 +21,12 @@ venue:
   type: "Working Group"
   mail: "tcpm@ietf.org"
   arch: "https://mailarchive.ietf.org/arch/browse/tcpm/"
-  github: "obonaventure/draft-tcp-ao-tls"
-  latest: "https://obonaventure.github.io/draft-tcp-ao-tls/draft-piraux-tcp-ao-tls.html"
+  github: "IPNetworkingLab/draft-tcp-ao-tls"
 
 author:
  -
     name: Maxime Piraux
-    organization: UCLouvain & WELRI
+    organization: UCLouvain 
     email: maxime.piraux@uclouvain.be
  -
     name: Olivier Bonaventure
@@ -35,7 +34,7 @@ author:
     email: olivier.bonaventure@uclouvain.be
  -
     name: Thomas Wirtgen
-    organization: UCLouvain & WELRI
+    organization: UCLouvain 
     email: thomas.wirtgen@uclouvain.be
 
 
@@ -47,15 +46,8 @@ normative:
   RFC8126:
 
 informative:
-   CONEXT24:
-    author:
-     - ins: T. Wirtgen
-     - ins: N. Rybowski
-     - ins: C. Pelsser
-     - ins: O. Bonaventure
-    title: The Multiple Benefits of a Secure Transport for BGP
-    seriesinfo: Proceedings of the 20th International Conference on emerging Networking EXperiments and Technologies (CoNEXT'24)
-    date: December 2024
+   CONEXT24: DOI.10.1145/3696406
+   RFC4253: 
 
 --- abstract
 
@@ -79,10 +71,9 @@ TCP-AO protects the integrity of all the packets exchanged during a TCP
 connection, including the SYNs. Such a protection is important for some specific
 services, but many applications would benefit from the integrity protection
 offered by TCP-AO, notably against RST attacks that can happen later in the
-connection. Unfortunately, from a deployment
-viewpoint, for many applications that use long-lived TCP connections,
-having an existing MKT on the client and the server before establishing a
-connection is a severe limitation.
+connection. Unfortunately, from a deployment viewpoint, for many applications 
+that use long-lived TCP connections, having an existing MKT on the client 
+and the server before establishing a connection is a severe limitation.
 
 This document proposes a way to derive a MKT from the TLS secure handshake {{RFC8446}}.
 Before the TLS handshake completes, this document defines default keys which
@@ -92,8 +83,8 @@ subsequent packets past the TLS handshake. This
 prevents packet injection attacks that could result in the failure of the TLS
 connection.
 
-This mechanism can be used to authenticate the TCP transport of BGP sessions when TLS
-is used to secure their BGP messages as discussed in {{CONEXT24}}.
+This mechanism can be used to authenticate the TCP packets of BGP sessions when TLS
+is used as discussed in {{CONEXT24}}.
 
 This document is organised as follows. We provide a brief overview of
 Opportunistic TCP-AO in section {{overview}}. Then section {{format}} discusses the
@@ -116,7 +107,7 @@ connection, i.e. the SYNs and all subsequent packets are authenticated,
 but using a MKT with a default key specified in this document.
 Then, during the TLS handshake,
 both endpoints announce the parameters they will use for their MKT. When the
-TLS handshake completes, they can use their MKT to protect the TCP packets they
+TLS handshake completes, they can use their own MKT to protect the TCP packets they
 send and use their peer MKT to verify the TCP packets they receive.
 Thus, the beginning of the connection is not protected against
 packet modifications and packet injection attacks. The real protection only
@@ -137,13 +128,13 @@ for validating clients packet.
 The server replies with TLS ServerHello and TLS EncryptedExtensions
 messages that are sent in packets using the default TCP-AO MKT.
 To finish the setting up of TCP-AO, the server includes the AO Extension in
-in the sent EncryptedExtensions to announce the parameters it will use to
+the sent EncryptedExtensions to announce the parameters it will use to
 protect the packets it will send.
 It then installs the new key in its TCP-AO MKT.
 Upon reception of these messages, the client can derive the TLS and
 TCP-AO keys. It installs the TCP-AO keys in its MKT and sends the Finished
 message protected with the new MKT. All the packets exchanged after the
-Finished are protected using the MKT derived from the secure TLS handshake.
+Finished message are protected using the MKT derived from the secure TLS handshake.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Client                                   Server
@@ -291,6 +282,8 @@ Later versions of this document will also specify the interactions between this
 mode of enabling TCP-AO and other TLS mechanisms, such as using pre-shared keys
 and 0-RTT data, as well as other TCP extensions, such as TCP Fast Open.
 
+A similar extension could be defined for other protocols that derive a
+security key such as SSH {{RFC4253}}.
 
 # Security Considerations
 
@@ -299,7 +292,7 @@ legitimate connectionless resets, e.g. when an endpoint loses the required state
 to send TCP-AO segments. {{Section 7.7 of RFC5925}} provides recommendations to
 mitigate this effect.
 
-Using TCP-AO with TLS can also inhibits the triggering of the "bad_record_mac"
+Using TCP-AO with TLS can also inhibit the triggering of the "bad_record_mac"
 alert that abruptly closes the TLS session when a decryption error occurs. For
 instance, injected packets will fail the TCP-AO authentication and be ignored
 by the receiver instead. This also prevents sessionless resets at the TLS level,
