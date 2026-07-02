@@ -25,13 +25,13 @@ venue:
 
 author:
  -
-    name: Maxime Piraux
-    organization: UCLouvain 
-    email: maxime.piraux@uclouvain.be
- -
     name: Olivier Bonaventure
     organization: UCLouvain & WELRI
     email: olivier.bonaventure@uclouvain.be
+ -
+    name: Maxime Piraux
+    organization: UCLouvain 
+    email: maxime.piraux@uclouvain.be
  -
     name: Thomas Wirtgen
     organization: UCLouvain 
@@ -44,17 +44,20 @@ normative:
   RFC8446:
   RFC5926:
   RFC8126:
-
+  RFC5869:
+  
 informative:
    CONEXT24: DOI.10.1145/3696406
-   RFC4253: 
+   RFC4253:
+   I-D.hbq-bgp-auth:
+   I-D.wirtgen-bg-tls:
 
 --- abstract
 
 
-This document specifies an opportunistic mode for TCP-AO. In this mode, the TCP
-connection starts with a well-known authentication key which is later replaced
-by a secure key derived from the TLS handshake.
+This document specifies an opportunistic mode for TCP-AO when used with TLS.
+In this mode, the TCP connection starts with a well-known authentication key
+which is later replaced by a secure key derived from the TLS handshake.
 
 --- middle
 
@@ -70,8 +73,9 @@ TCP-AO supports different authentication algorithms {{RFC5926}}.
 TCP-AO protects the integrity of all the packets exchanged during a TCP
 connection, including the SYNs. Such a protection is important for some specific
 services, but many applications would benefit from the integrity protection
-offered by TCP-AO, notably against RST attacks that can happen later in the
-connection. Unfortunately, from a deployment viewpoint, for many applications 
+offered by TCP-AO, notably against RST attacks or injection attacks that can
+happen later in the connection. Unfortunately, from a deployment viewpoint,
+for many applications 
 that use long-lived TCP connections, having an existing MKT on the client 
 and the server before establishing a connection is a severe limitation.
 
@@ -84,7 +88,7 @@ prevents packet injection attacks that could result in the failure of the TLS
 connection.
 
 This mechanism can be used to authenticate the TCP packets of BGP sessions when TLS
-is used as discussed in {{CONEXT24}}.
+is used as discussed in {{CONEXT24}},{{I-D.hbq-bgp-auth}},{{I-D.wirtgen-bg-tls}}.
 
 This document is organised as follows. We provide a brief overview of
 Opportunistic TCP-AO in section {{overview}}. Then section {{format}} discusses the
@@ -107,8 +111,8 @@ connection, i.e. the SYNs and all subsequent packets are authenticated,
 but using a MKT with a default key specified in this document.
 Then, during the TLS handshake,
 both endpoints announce the parameters they will use for their MKT. When the
-TLS handshake completes, they can use their own MKT to protect the TCP packets they
-send and use their peer MKT to verify the TCP packets they receive.
+TLS handshake completes, they both can securely derive an MKT from the
+TLS secrets and use this new MKT to protect subsequent packets. 
 Thus, the beginning of the connection is not protected against
 packet modifications and packet injection attacks. The real protection only
 starts once the TLS handshake finishes.
@@ -123,18 +127,20 @@ of the TCP-AO connection with an ACK and sends a TLS ClientHello containing
 the AO Extension defined in this document. This
 extension specifies the authentication algorithms that the client will use when
 sending TCP packets on the connection and whether TCP options will be protected.
-At this point the server can derive the TLS keys and the TCP-AO keys to use
+At this point the server can derive from the TLS keys the TCP-AO keys to use
 for validating clients packet.
 The server replies with TLS ServerHello and TLS EncryptedExtensions
-messages that are sent in packets using the default TCP-AO MKT.
+that are sent in packets protected with the default TCP-AO MKT.
 To finish the setting up of TCP-AO, the server includes the AO Extension in
 the sent EncryptedExtensions to announce the parameters it will use to
 protect the packets it will send.
-It then installs the new key in its TCP-AO MKT.
+It then derives the new key and installs it in its TCP-AO MKT.
 Upon reception of these messages, the client can derive the TLS and
 TCP-AO keys. It installs the TCP-AO keys in its MKT and sends the Finished
 message protected with the new MKT. All the packets exchanged after the
 Finished message are protected using the MKT derived from the secure TLS handshake.
+The initial TCP-AO key remains available on the client and server to support
+retransmissions until the derivation of the next key (K_2). 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Client                                   Server
@@ -149,15 +155,22 @@ Client                                   Server
  |          (KeyID=0, RNextID=x)             |
  |<------------------------------------------|
  |              [TLS Finished]               |
- |           (KeyID=x, RNextID=y)            |
+ |           (KeyID=0, RNextID=0)            |
  |------------------------------------------>|
+ |   [K_1 installed and promoted on server]  |
+ |   [K_1 installed and promoted on client]  |
  |              [TLS records]                |
- |           (KeyID=y, RNextID=x)            |
+ |           (KeyID=1, RNextID=1)            |
  |<----------------------------------------->|
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 {: #fig-overview-handshake title="Starting an opportunistic TCP-AO connection
 with TLS. The messages between brackets are authenticated using the TCP-AO MKT
 derived from the TLS handshake."}
+
+
+The TCP-AO can be changed during the lifetime of the TLS session. To derive
+a new TCP-AO key, this document uses the HKDF-Expand construction {{RFC5869}}.
+
 
 # Opportunistic TCP-AO {#format}
 
@@ -209,7 +222,13 @@ of TCP options or not. The TCPAOAuth specifies
 the authentication algorithm defined in {{RFC5926}} that will be
 used to protect the packets. The TCPAOKDF specifies the key derivation
 function defined in {{RFC5926}} and that the endpoint will use to derive its
-keys.
+keys. If the peer did not use this option when initiating the TLS session, this
+document assumes the following default:
+
+ - no integrity prototection for the TCP options
+ - The default key derivation function is KDF_AES_128_CMAC
+ - The default message authentication code is AES-128-CMAC-96
+
 
 ## The initial MKT
 
@@ -223,8 +242,8 @@ MKT from the TLS keying material. This document defines the following default MK
    in the MAC calculation.
  - The current values for the SendID and RecvID are set to 0.
  - The Master secret is set to 0x1cebb1ff.
- - The default key derivation function is KDF_HMAC_SHA1.
- - The default message authentication code is HMAC-SHA-1-96.
+ - The default key derivation function is KDF_AES_128_CMAC.
+ - The default message authentication code is AES-128-CMAC-96.
 
 Given that the TCP-AO KeyID is a local field and has no global meaning,
 hosts have no guarantee that a KeyID of 0 will be unequivocally recognised as
@@ -236,7 +255,7 @@ MUST check that the server accepted the use of TCP-AO in this mode by replying
 using the default MKT before deriving a secure MKT as described in this
 document.
 
-## Derivation of the secure TCP AO MKT
+## Derivation of the first TCP AO MKT (K_1)
 
 The Master key for the MKT to protect the TCP packets after the transmission
 of the Finished messages are derived from the Exporter Master Secret using
@@ -258,6 +277,12 @@ The TLS-Exporter function receives the label "tcp-ao", with the parameters of
 the MKT and the KeyID as context as defined in the TCPAO structure within
 {{the-tcpao-tls-extension}}. It generates a 32-byte secret.
 
+
+In this document both endpoints use the same value for SendID and RecvID.
+Implementations MUST use SendID = RecvID for each MKT derived from the
+TLS Exporter and for each subsequent ratchet step. The value 0 is reserved for the
+default MKT; derived KeyIDs MUST be in the range 1–254.
+
 The client and server can decide the value of the KeyID independently and
 announce it in the AO TCP Option as defined in {{RFC5925}}.
 The KeyID MUST be different than the default KeyID of 0.
@@ -266,24 +291,56 @@ The traffic keys used by the client and the server can then be derived
 from this secret using the procedures defined in {{RFC5925}} and
 {{RFC5926}}.
 
-After the traffic keys are installed, the client and server stop using the
+After K_1 is installed and promoted as the send key, the initial MKT (K_0) is retained as
+a receive-only fallback to allow the peer's in-flight TLS Finished to be retransmitted as
+it may still carry K_0 authentication.
+K_0 is deleted when the first HKDF ratchet step installs K_2 (see Section 4.4).
+At any moment exactly two MKTs coexist: the current send key and the previous key kept
+as a receive fallback.
+
+After K_1 is installed, the client and server stop using the
 initial MKT defined in {{the-initial-mkt}}.
 
-## Current limitations
+## Periodic Key Rotation {#rekey}
 
-This version of the document does not specifiy how to do key updates for MKTs.
-It is left for later versions of this document to fill this gap.
-One way would be to derive a new tcp_ao_secret from the previous tcp_ao_secret
-and use a new KeyID. However, this could expose the key update
-event to on-path attackers. Further guidance is required on the severity of
-this issue and how it could be mitigated.
+After K_1 is installed, endpoints rotate to a new MKT periodically using an
+HKDF ratchet. Each rotation derives the next key from the current one using
+HKDF-Expand {{RFC5869}}:
 
-Later versions of this document will also specify the interactions between this
-mode of enabling TCP-AO and other TLS mechanisms, such as using pre-shared keys
-and 0-RTT data, as well as other TCP extensions, such as TCP Fast Open.
+~~~
+  K_{n+1} = HKDF-Expand(
+      PRK  = K_n,
+      info = "tcp-ao-rekey",
+      L    = 32 octets,
+      Hash = SHA-256
+  )
+~~~
 
-A similar extension could be defined for other protocols that derive a
-security key such as SSH {{RFC4253}}.
+
+Key rotation can be done using a two-phase timer with period T (the configured rekey
+interval):
+
+**Phase 1** (timer fires, `rotating = false`):
+
+  1. Delete K_{n-1} (delayed-delete: K_{n-1} is kept as a receive
+     fallback since the previous rotation).
+  2. Derive K_{n+1} = HKDF-Expand(K_n, "tcp-ao-rekey", 32).
+  3. Install K_{n+1} on the socket without promoting it as the send key.
+  4. Set `rotating = true`. Schedule Phase 2 after delay T.
+
+**Phase 2** (timer fires, `rotating = true`):
+
+  1. Promote K_{n+1} as the send key.
+  2. Set `rotating = false`. Schedule next Phase 1 after delay T.
+
+The one-interval gap between Phase 1 and Phase 2 gives the peer time to
+complete its own Phase 1 and install K_{n+1} before either side starts
+sending segments authenticated under K_{n+1}.
+
+KeyIDs cycle in the range 1–254. Reuse of a KeyID is safe because each
+reuse carries a distinct ratchet-derived secret.
+
+Keys that are not anymore in use SHOULD be wiped out of memory after each HKDF_Expand..
 
 # Security Considerations
 
@@ -298,6 +355,8 @@ instance, injected packets will fail the TCP-AO authentication and be ignored
 by the receiver instead. This also prevents sessionless resets at the TLS level,
 and similar recommendations to {{Section 7.7 of RFC5925}} can apply.
 
+
+The ratchet state MUST be wiped when the session closes.
 
 # IANA Considerations
 
