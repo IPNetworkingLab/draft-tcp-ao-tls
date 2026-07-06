@@ -49,8 +49,8 @@ normative:
 informative:
    CONEXT24: DOI.10.1145/3696406
    RFC4253:
-   I-D.hbq-bgp-auth:
-   I-D.wirtgen-bg-tls:
+   I-D.hbq-bgp-tls-auth:
+   I-D.wirtgen-bgp-tls:
 
 --- abstract
 
@@ -88,7 +88,7 @@ prevents packet injection attacks that could result in the failure of the TLS
 connection.
 
 This mechanism can be used to authenticate the TCP packets of BGP sessions when TLS
-is used as discussed in {{CONEXT24}},{{I-D.hbq-bgp-auth}},{{I-D.wirtgen-bg-tls}}.
+is used as discussed in {{CONEXT24}},{{I-D.hbq-bgp-tls-auth}},{{I-D.wirtgen-bgp-tls}}.
 
 This document is organised as follows. We provide a brief overview of
 Opportunistic TCP-AO in section {{overview}}. Then section {{format}} discusses the
