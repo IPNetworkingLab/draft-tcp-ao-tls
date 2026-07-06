@@ -30,7 +30,7 @@ author:
     email: olivier.bonaventure@uclouvain.be
  -
     name: Maxime Piraux
-    organization: UCLouvain
+    organization: Unaffiliated
     email: maxime.piraux@uclouvain.be
  -
     name: Thomas Wirtgen
