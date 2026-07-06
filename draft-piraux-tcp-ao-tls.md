@@ -30,11 +30,11 @@ author:
     email: olivier.bonaventure@uclouvain.be
  -
     name: Maxime Piraux
-    organization: UCLouvain 
+    organization: UCLouvain
     email: maxime.piraux@uclouvain.be
  -
     name: Thomas Wirtgen
-    organization: Unaffiliated 
+    organization: Unaffiliated
     email: thomas.wirtgen@gmail.com
 
 
@@ -45,7 +45,7 @@ normative:
   RFC5926:
   RFC8126:
   RFC5869:
-  
+
 informative:
    CONEXT24: DOI.10.1145/3696406
    RFC4253:
@@ -75,8 +75,8 @@ connection, including the SYNs. Such a protection is important for some specific
 services, but many applications would benefit from the integrity protection
 offered by TCP-AO, notably against RST attacks or injection attacks that can
 happen later in the connection. Unfortunately, from a deployment viewpoint,
-for many applications 
-that use long-lived TCP connections, having an existing MKT on the client 
+for many applications
+that use long-lived TCP connections, having an existing MKT on the client
 and the server before establishing a connection is a severe limitation.
 
 This document proposes a way to derive a MKT from the TLS secure handshake {{RFC8446}}.
@@ -112,7 +112,7 @@ but using a MKT with a default key specified in this document.
 Then, during the TLS handshake,
 both endpoints announce the parameters they will use for their MKT. When the
 TLS handshake completes, they both can securely derive an MKT from the
-TLS secrets and use this new MKT to protect subsequent packets. 
+TLS secrets and use this new MKT to protect subsequent packets.
 Thus, the beginning of the connection is not protected against
 packet modifications and packet injection attacks. The real protection only
 starts once the TLS handshake finishes.
@@ -140,7 +140,7 @@ TCP-AO keys. It installs the TCP-AO keys in its MKT and sends the Finished
 message protected with the new MKT. All the packets exchanged after the
 Finished message are protected using the MKT derived from the secure TLS handshake.
 The initial TCP-AO key remains available on the client and server to support
-retransmissions until the derivation of the next key (K_2). 
+retransmissions until the derivation of the next key (K_2).
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Client                                   Server
