@@ -34,8 +34,8 @@ author:
     email: maxime.piraux@uclouvain.be
  -
     name: Thomas Wirtgen
-    organization: UCLouvain 
-    email: thomas.wirtgen@uclouvain.be
+    organization: Unaffiliated 
+    email: thomas.wirtgen@gmail.com
 
 
 normative:
